@@ -20,10 +20,13 @@ function shopData() {
         
         // --- Categories for UI ---
         categories: [
-            { name: 'Tất cả', icon: '<svg>...</svg>' },
-            { name: 'Áo đấu – Áo CLB/Đội tuyển', icon: '<svg>...</svg>' },
-            { name: 'Giày thể thao', icon: '<svg>...</svg>' },
-            // Thêm các icon SVG khác cho các danh mục
+            { name: 'Tất cả', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>' },
+            { name: 'Áo đấu – Áo CLB/Đội tuyển', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>' },
+            { name: 'Giày thể thao', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>' },
+            { name: 'Quần áo thể thao', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>' },
+            { name: 'Dụng cụ thể thao', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18" /></svg>' },
+            { name: 'Phụ kiện thể thao', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>' },
+            { name: 'Túi – Ba lô thể thao', icon: '<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" /></svg>' }
         ],
 
         // --- Methods ---
@@ -54,7 +57,6 @@ function shopData() {
 
         setCategory(categoryName) {
             this.activeCategory = categoryName;
-            // Scroll to the main product section when a category is selected
             if(categoryName !== 'Tất cả') {
                  document.getElementById('all-products').scrollIntoView({ behavior: 'smooth' });
             }
@@ -63,17 +65,16 @@ function shopData() {
         performFilter() {
             let productsToFilter = this.products;
             
-            // Filter by active category
             if (this.activeCategory !== 'Tất cả') {
                 productsToFilter = productsToFilter.filter(p => p.category === this.activeCategory);
             }
 
-            // Filter by search term
             if (this.searchTerm.trim()) {
                 const lowerCaseSearch = this.searchTerm.toLowerCase();
                 productsToFilter = productsToFilter.filter(p => 
                     p.name.toLowerCase().includes(lowerCaseSearch) ||
-                    (p.sku && p.sku.toLowerCase().includes(lowerCaseSearch))
+                    (p.sku && p.sku.toLowerCase().includes(lowerCaseSearch)) ||
+                    (p.category && p.category.toLowerCase().includes(lowerCaseSearch))
                 );
             }
             
