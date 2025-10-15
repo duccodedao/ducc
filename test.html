@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Online - VietQR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .copy-btn-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+        .copy-btn:hover .copy-btn-icon {
+            transform: scale(1.1);
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        #modal-content {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div id="product-card" class="bg-white rounded-xl shadow-lg overflow-hidden max-w-sm w-full">
+            <img src="https://placehold.co/600x400/3498db/ffffff?text=Sản+Phẩm" alt="Hình ảnh sản phẩm" class="w-full h-48 object-cover">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Sản phẩm Demo</h2>
+                <p class="text-gray-600 mb-4">Đây là mô tả ngắn gọn về sản phẩm tuyệt vời này. Mua ngay để trải nghiệm.</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-3xl font-bold text-blue-600">50,000đ</span>
+                    <button id="buy-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300">
+                        Mua Ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+            <button id="close-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Thông tin thanh toán</h2>
+            <p class="text-center text-gray-500 mb-6">Quét mã VietQR bằng ứng dụng ngân hàng của bạn để thanh toán nhanh chóng.</p>
+
+            <div class="flex justify-center mb-6">
+                <img id="qr-code" src="" alt="Mã QR thanh toán" class="rounded-lg border-4 border-gray-200">
+            </div>
+
+            <div class="space-y-4">
+                 <div class="p-3 bg-gray-50 rounded-lg">
+                    <span class="text-sm text-gray-500">Ngân hàng</span>
+                    <p class="font-semibold text-gray-800 text-lg">Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <span class="text-sm text-gray-500">Chủ tài khoản</span>
+                        <p class="font-semibold text-gray-800 text-lg">SON LY HONG DUC</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <span class="text-sm text-gray-500">Số tài khoản</span>
+                        <p id="account-number" class="font-mono font-semibold text-gray-800 text-lg">0891000650891</p>
+                    </div>
+                    <button class="copy-btn group" data-target="account-number" title="Sao chép số tài khoản">
+                        <span class="copy-text text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">Chép</span>
+                        <svg class="copy-btn-icon h-6 w-6 text-blue-500 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <span class="text-sm text-gray-500">Số tiền</span>
+                        <p id="amount" class="font-mono font-semibold text-red-600 text-lg">50000</p>
+                    </div>
+                     <button class="copy-btn group" data-target="amount" title="Sao chép số tiền">
+                        <span class="copy-text text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">Chép</span>
+                        <svg class="copy-btn-icon h-6 w-6 text-blue-500 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <span class="text-sm text-gray-500">Nội dung chuyển khoản</span>
+                        <p id="content" class="font-mono font-semibold text-gray-800 text-lg">TT1845XYZ</p>
+                    </div>
+                    <button class="copy-btn group" data-target="content" title="Sao chép nội dung">
+                       <span class="copy-text text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">Chép</span>
+                        <svg class="copy-btn-icon h-6 w-6 text-blue-500 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                 <div id="payment-status" class="min-h-[24px] text-center mb-4 font-medium"></div>
+                <button id="confirm-payment-btn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition duration-300 disabled:bg-gray-400">
+                    Tôi đã thanh toán
+                </button>
+            </div>
+             <p class="text-xs text-gray-400 text-center mt-4">Lưu ý: Đây là trang web demo. Chức năng kiểm tra thanh toán chỉ là mô phỏng.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const BANK_ID = "970436"; // BIN của Vietcombank
+        const ACCOUNT_NO = "0891000650891";
+        const AMOUNT = "50000";
+        const INFO = "TT1845XYZ"; // Nội dung chuyển khoản/Mã đơn hàng
+
+        // Lấy các element từ DOM
+        const buyBtn = document.getElementById('buy-btn');
+        const paymentModal = document.getElementById('payment-modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeBtn = document.getElementById('close-btn');
+        const copyBtns = document.querySelectorAll('.copy-btn');
+        const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
+        const paymentStatus = document.getElementById('payment-status');
+        const qrCodeImg = document.getElementById('qr-code');
+
+        // Hàm tạo link VietQR
+        const generateVietQRLink = () => {
+            // Sử dụng dịch vụ miễn phí của vietqr.io để tạo ảnh QR
+            // template=compact2 là một mẫu phổ biến, gọn gàng
+            return `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${AMOUNT}&addInfo=${INFO}`;
+        };
+
+        // Hàm để reset trạng thái của modal
+        const resetModalState = () => {
+            paymentStatus.innerHTML = '';
+            confirmPaymentBtn.disabled = false;
+            confirmPaymentBtn.innerText = 'Tôi đã thanh toán';
+        };
+
+        // Hàm để mở modal
+        const openModal = () => {
+            // Cập nhật mã QR mỗi khi mở modal
+            qrCodeImg.src = generateVietQRLink();
+            resetModalState();
+            paymentModal.classList.remove('hidden');
+            setTimeout(() => { // Thêm hiệu ứng xuất hiện
+                 modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        };
+        
+        // Hàm để đóng modal
+        const closeModal = () => {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                paymentModal.classList.add('hidden');
+            }, 300); // Đợi hiệu ứng kết thúc
+        };
+
+        // Gán sự kiện cho các nút
+        buyBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        paymentModal.addEventListener('click', (event) => {
+            if (event.target === paymentModal) {
+                closeModal();
+            }
+        });
+
+        // Xử lý sự kiện sao chép
+        copyBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const textToCopy = document.getElementById(targetId).innerText;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const copyText = button.querySelector('.copy-text');
+                    if (copyText) {
+                        const originalText = copyText.innerText;
+                        copyText.innerText = 'Đã chép!';
+                        setTimeout(() => {
+                           copyText.innerText = originalText;
+                        }, 1500);
+                    }
+                }).catch(err => {
+                    console.error('Không thể sao chép: ', err);
+                });
+            });
+        });
+
+        // Xử lý sự kiện xác nhận thanh toán (mô phỏng)
+        confirmPaymentBtn.addEventListener('click', () => {
+            confirmPaymentBtn.disabled = true;
+            paymentStatus.innerHTML = '<p class="text-blue-600 animate-pulse">Đang kiểm tra giao dịch...</p>';
+
+            // --- ĐÂY LÀ PHẦN MÔ PHỎNG ---
+            // Trong một ứng dụng thực tế, bạn sẽ gửi yêu cầu từ đây đến backend của mình.
+            // Backend sau đó sẽ gọi API của ngân hàng hoặc một bên thứ ba để kiểm tra
+            // xem giao dịch với mã `INFO` (TT1845XYZ) và số tiền `AMOUNT` đã tồn tại chưa.
+            // Ví dụ: fetch('/api/check-payment?orderCode=' + INFO)
+            // Dựa vào kết quả trả về từ backend, bạn sẽ cập nhật giao diện.
+            
+            setTimeout(() => {
+                const isSuccess = Math.random() < 0.7; // 70% thành công, 30% thất bại
+
+                if (isSuccess) {
+                    paymentStatus.innerHTML = '<p class="text-green-600 font-bold">Thanh toán thành công! Cảm ơn bạn.</p>';
+                    confirmPaymentBtn.innerText = 'Hoàn tất';
+                    setTimeout(closeModal, 3000);
+                } else {
+                    paymentStatus.innerHTML = '<p class="text-red-600">Chưa tìm thấy giao dịch. Vui lòng thử lại sau ít phút hoặc liên hệ hỗ trợ.</p>';
+                    confirmPaymentBtn.disabled = false;
+                }
+            }, 2500); // Giả lập độ trễ 2.5 giây
+        });
+
+    </script>
+
+</body>
+</html>

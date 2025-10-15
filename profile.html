@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài Khoản Của Tôi - HD Sports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Poppins', sans-serif; background-color: #111827; color: #E5E7EB; } 
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #1f2937; } ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .input-field { background-color: #374151; border: 1px solid #4b5563; color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; transition: all 0.2s ease; }
+        .input-field:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; text-align: center; transition: all 0.2s ease; cursor: pointer; }
+        .btn-primary { background-color: #f97316; color: white; } .btn-primary:hover { background-color: #ea580c; }
+        .btn-secondary { background-color: #4b5563; color: white; } .btn-secondary:hover { background-color: #6b7280; }
+    </style>
+</head>
+<body x-data="profilePage()" x-init="init()" x-cloak>
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-30"><nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20"><a href="index.html" class="text-3xl font-bold text-white">HD <span class="text-orange-500">Sports</span></a><div id="auth-container"></div></nav></header>
+
+    <main class="container mx-auto px-4 py-10">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Lịch Sử Đơn Hàng</h1>
+            <a href="seller.html" class="btn btn-primary">Kênh Người Bán</a>
+        </div>
+        <div x-show="isLoading" class="text-center text-gray-400 p-8">Đang tải lịch sử...</div>
+        <div x-show="!isLoading && errorMessage" class="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg" role="alert"><strong class="font-bold">Đã xảy ra lỗi!</strong><span class="block sm:inline ml-2" x-text="errorMessage"></span></div>
+        <div x-show="!isLoading && !errorMessage">
+            <div class="mb-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                <div class="bg-gray-800 p-4 rounded-lg text-center border border-gray-700/50"><p class="text-2xl font-bold text-white" x-text="orderStats.total"></p><p class="text-sm text-gray-400">Tổng đơn</p></div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center border border-gray-700/50"><p class="text-2xl font-bold text-blue-400" x-text="orderStats['Chờ xác nhận']"></p><p class="text-sm text-gray-400">Chờ xác nhận</p></div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center border border-gray-700/50"><p class="text-2xl font-bold text-yellow-400" x-text="orderStats['Đang xử lý']"></p><p class="text-sm text-gray-400">Đang xử lý</p></div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center border border-gray-700/50"><p class="text-2xl font-bold text-cyan-400" x-text="orderStats['Đang giao hàng']"></p><p class="text-sm text-gray-400">Đang giao</p></div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center border border-gray-700/50"><p class="text-2xl font-bold text-green-400" x-text="orderStats['Đã giao hàng']"></p><p class="text-sm text-gray-400">Đã giao</p></div>
+            </div>
+            
+            <div x-show="orders.length === 0" class="text-center text-gray-400 bg-gray-800/50 border border-gray-700/50 p-8 rounded-lg">Bạn chưa có đơn hàng nào.</div>
+            <div class="space-y-6">
+                <template x-for="order in orders" :key="order.id">
+                    <div class="bg-gray-800 p-4 md:p-6 rounded-lg shadow-lg border border-gray-700/50">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-700 pb-4 mb-4">
+                            <div><p class="font-semibold text-white text-sm sm:text-base">Mã đơn: <span class="font-normal text-orange-400 font-mono" x-text="order.id"></span></p><p class="text-xs sm:text-sm text-gray-400">Ngày đặt: <span x-text="formatDate(order.createdAt)"></span></p></div>
+                            <div class="mt-2 sm:mt-0 text-left sm:text-right"><p class="text-lg font-bold text-white"><span x-show="order.discountAmount > 0" class="text-sm text-gray-400 line-through" x-text="formatCurrency(order.totalAmount + order.discountAmount)"></span> <span x-text="formatCurrency(order.totalAmount)"></span></p><p class="text-sm font-semibold px-2 py-0.5 rounded-full mt-1 inline-block" :class="{'bg-blue-500/20 text-blue-300': order.status === 'Chờ xác nhận', 'bg-yellow-500/20 text-yellow-300': order.status === 'Đang xử lý', 'bg-cyan-500/20 text-cyan-300': order.status === 'Đang giao hàng', 'bg-green-500/20 text-green-300': order.status === 'Đã giao hàng', 'bg-red-500/20 text-red-300': order.status === 'Đã hủy', 'bg-purple-500/20 text-purple-300': order.status === 'Đã hoàn tiền'}" x-text="order.status === 'Đã giao hàng' && order.userConfirmed ? 'Đã nhận hàng' : order.status"></p></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="text-sm space-y-2"><h4 class="font-semibold text-white mb-2">Thông tin giao hàng</h4><p class="text-gray-300"><strong>Tên:</strong> <span x-text="order.customerInfo.name"></span></p><p class="text-gray-300"><strong>SĐT:</strong> <span x-text="order.customerInfo.phone"></span></p><p class="text-gray-300"><strong>Địa chỉ:</strong> <span x-text="order.customerInfo.address"></span></p><p x-show="order.notes" class="text-gray-300 mt-2 p-2 bg-gray-700/50 rounded-md"><strong>Ghi chú:</strong> <span x-text="order.notes"></span></p></div>
+                            <div class="text-sm space-y-2"><h4 class="font-semibold text-white mb-2">Sản phẩm</h4><ul class="text-gray-300 space-y-3"><template x-for="(item, index) in order.items" :key="index"><li class="flex justify-between items-center"><div><p x-text="`${item.name} (SL: ${item.quantity})`"></p><div x-show="item.selectedOptions && Object.keys(item.selectedOptions).length > 0" class="text-xs text-gray-400" x-text="Object.entries(item.selectedOptions).map(([key, value]) => `${key}: ${value}`).join(', ')"></div><p x-show="item.printing_notes" class="text-orange-400 text-xs" x-text="`In: ${item.printing_notes}`"></p></div><div x-show="order.status === 'Đã giao hàng' && order.userConfirmed"><button @click="openRatingModal(order.id, item)" class="text-xs font-semibold py-1 px-3 rounded transition" :class="item.rating ? 'bg-green-600/80 text-white hover:bg-green-700' : 'bg-yellow-500/80 text-black hover:bg-yellow-400'"><span x-text="item.rating ? 'Xem' : 'Đánh giá'"></span></button></div></li></template></ul></div>
+                        </div>
+                        <div class="border-t border-gray-700 mt-4 pt-4 flex justify-end space-x-3">
+                            <template x-if="order.status === 'Chờ xác nhận'"><button @click="openEditModal(order)" class="btn btn-secondary text-sm">Sửa Thông Tin</button><button @click="cancelOrder(order.id)" class="bg-red-600/80 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded text-sm transition-colors">Hủy Đơn Hàng</button></template>
+                            <template x-if="order.status === 'Đang giao hàng' && !order.userConfirmed"><button @click="confirmReceipt(order.id)" class="bg-green-600/80 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded text-sm transition-colors">Đã nhận hàng</button></template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </main>
+    
+    <div x-show="isEditModalOpen" @keydown.escape.window="isEditModalOpen = false" class="fixed inset-0 z-40 overflow-y-auto" style="display: none;" x-cloak><div class="flex items-center justify-center min-h-screen px-4"><div x-show="isEditModalOpen" x-transition.opacity class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div><div @click.away="isEditModalOpen = false" x-show="isEditModalOpen" x-transition class="relative bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-full max-w-lg p-6"><h3 class="text-xl font-bold text-white mb-4">Chỉnh sửa thông tin</h3><form @submit.prevent="saveOrderInfo" class="space-y-4"><div><label class="block text-gray-400 mb-1 text-sm">Họ và tên</label><input type="text" x-model="editingOrderInfo.name" required class="input-field w-full"></div><div><label class="block text-gray-400 mb-1 text-sm">Số điện thoại</label><input type="tel" x-model="editingOrderInfo.phone" required class="input-field w-full"></div><div><label class="block text-gray-400 mb-1 text-sm">Địa chỉ</label><textarea x-model="editingOrderInfo.address" required class="input-field w-full" rows="3"></textarea></div><div><label class="block text-gray-400 mb-1 text-sm">Ghi chú</label><textarea x-model="editingOrderInfo.notes" class="input-field w-full" rows="2"></textarea></div><div class="flex justify-end space-x-3 pt-4"><button type="button" @click="isEditModalOpen = false" class="btn btn-secondary">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div></form></div></div></div>
+    <div x-show="isRatingModalOpen" @keydown.escape.window="isRatingModalOpen = false" class="fixed inset-0 z-40 overflow-y-auto" style="display: none;" x-cloak><div class="flex items-center justify-center min-h-screen px-4"><div x-show="isRatingModalOpen" x-transition.opacity class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="isRatingModalOpen = false"></div><div x-show="isRatingModalOpen" x-transition class="relative bg-gray-800 border border-gray-700 rounded-lg shadow-xl w-full max-w-lg p-6"><h3 class="text-xl font-bold text-white mb-4">Đánh giá sản phẩm</h3><form @submit.prevent="submitRating"><div class="flex justify-center items-center space-x-2 mb-4"><template x-for="star in [1, 2, 3, 4, 5]" :key="star"><svg @click="setRating(star)" class="w-10 h-10 cursor-pointer transition-transform hover:scale-110" :class="star <= ratingData.rating ? 'text-yellow-400' : 'text-gray-600'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg></template></div><div><label class="block text-gray-400 mb-1 text-sm">Bình luận (tùy chọn)</label><textarea x-model="ratingData.comment" rows="4" placeholder="Sản phẩm rất tuyệt vời..." class="input-field w-full"></textarea></div><div class="flex justify-end space-x-3 pt-4"><button type="button" @click="isRatingModalOpen = false" class="btn btn-secondary">Đóng</button><button type="submit" class="btn btn-primary">Gửi</button></div></form></div></div></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="./js/firebase-config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/profile.js"></script>
+</body>
+</html>

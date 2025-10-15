@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - HD Sports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Poppins', sans-serif; background-color: #111827; } 
+        .input-field { background-color: #374151; border: 1px solid #4b5563; color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; transition: all 0.2s ease; }
+        .input-field:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div x-data="authForm()" class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700/50">
+        <h1 class="text-3xl font-bold text-center text-white mb-2">HD <span class="text-orange-500">Sports</span></h1>
+        <p class="text-center text-gray-400 mb-8" x-text="isLoginView ? 'Chào mừng trở lại!' : 'Tạo tài khoản mới'"></p>
+        <div x-show="errorMessage" x-text="errorMessage" class="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-md mb-4 text-sm"></div>
+        <form @submit.prevent="handleLogin" x-show="isLoginView" class="space-y-4">
+            <input type="email" x-model="email" placeholder="Email" required class="input-field w-full">
+            <input type="password" x-model="password" placeholder="Mật khẩu" required class="input-field w-full">
+            <div class="flex items-center justify-between"><label class="flex items-center text-sm text-gray-400"><input type="checkbox" x-model="rememberMe" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-orange-600 focus:ring-orange-500"><span class="ml-2">Ghi nhớ đăng nhập</span></label></div>
+            <button type="submit" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Đăng Nhập</button>
+        </form>
+        <form @submit.prevent="handleRegister" x-show="!isLoginView" class="space-y-4">
+            <input type="email" x-model="email" placeholder="Email" required class="input-field w-full">
+            <input type="password" x-model="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" required class="input-field w-full">
+            <button type="submit" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition">Đăng Ký</button>
+        </form>
+        <div class="text-center my-4"><button @click="isLoginView = !isLoginView; errorMessage = ''" class="text-orange-400 hover:underline text-sm"><span x-text="isLoginView ? 'Chưa có tài khoản? Đăng ký ngay' : 'Đã có tài khoản? Đăng nhập'"></span></button></div>
+        <div class="relative flex py-5 items-center"><div class="flex-grow border-t border-gray-600"></div><span class="flex-shrink mx-4 text-gray-400 text-sm">Hoặc</span><div class="flex-grow border-t border-gray-600"></div></div>
+        <button @click="handleGoogleLogin" class="w-full flex items-center justify-center bg-white text-gray-800 font-medium py-3 rounded-lg hover:bg-gray-200 transition">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6 mr-2" alt="Google icon"> Tiếp tục với Google
+        </button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="./js/firebase-config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script>
+        function authForm() {
+            return {
+                isLoginView: true, email: '', password: '', rememberMe: true, errorMessage: '',
+                async handleLogin() { this.errorMessage = ''; try { const persistence = this.rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION; await auth.setPersistence(persistence); await loginWithEmail(this.email, this.password); } catch (err) { this.errorMessage = getFriendlyAuthError(err.code); } },
+                handleRegister() { this.errorMessage = ''; registerWithEmail(this.email, this.password).catch(err => this.errorMessage = getFriendlyAuthError(err.code)); },
+                handleGoogleLogin() { this.errorMessage = ''; signInWithGoogle().catch(err => this.errorMessage = getFriendlyAuthError(err.code)); }
+            }
+        }
+    </script>
+</body>
+</html>

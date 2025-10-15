@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - HD Sports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Poppins', sans-serif; background-color: #111827; color: #E5E7EB; } 
+        [x-cloak] { display: none !important; } 
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #1f2937; } ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .input-field { background-color: #374151; border: 1px solid #4b5563; color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; transition: all 0.2s ease; }
+        .input-field:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); }
+    </style>
+</head>
+<body x-data="checkoutPage()" x-cloak>
+    <header class="bg-gray-800 shadow-lg"><nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20"><a href="index.html" class="text-3xl font-bold text-white">HD <span class="text-orange-500">Sports</span></a><div id="auth-container"></div></nav></header>
+    <div class="container mx-auto px-4 py-10">
+        <h1 class="text-3xl font-bold text-center text-white mb-8">Thanh Toán Đơn Hàng</h1>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-gray-800 p-6 md:p-8 rounded-lg border border-gray-700/50">
+                <form id="checkout-form" @submit.prevent="placeOrder">
+                    <h2 class="text-xl font-semibold text-white mb-6">1. Thông tin giao hàng</h2>
+                    <div class="space-y-4">
+                        <div><label class="block text-gray-400 mb-2 text-sm">Họ và tên</label><input type="text" x-model="customer.name" required class="w-full input-field"></div>
+                        <div><label class="block text-gray-400 mb-2 text-sm">Số điện thoại</label><input type="tel" x-model="customer.phone" required class="w-full input-field"></div>
+                        <div><label class="block text-gray-400 mb-2 text-sm">Địa chỉ</label><textarea x-model="customer.address" required rows="3" class="w-full input-field"></textarea></div>
+                        <div><label class="block text-gray-400 mb-2 text-sm">Ghi chú (tùy chọn)</label><textarea x-model="customer.notes" placeholder="Ví dụ: Giao hàng trong giờ hành chính..." rows="2" class="w-full input-field"></textarea></div>
+                    </div>
+                </form>
+                <h2 class="text-xl font-semibold text-white mt-8 mb-4">2. Phương thức thanh toán</h2>
+                <div class="space-y-3">
+                    <label class="flex items-center p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"><input type="radio" name="payment" value="cod" x-model="paymentMethod" class="h-4 w-4 text-orange-600 border-gray-500 focus:ring-orange-500"><span class="ml-3 text-white">Thanh toán khi nhận hàng (COD)</span></label>
+                    <label class="flex items-center p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"><input type="radio" name="payment" value="bank" x-model="paymentMethod" class="h-4 w-4 text-orange-600 border-gray-500 focus:ring-orange-500"><span class="ml-3 text-white">Chuyển khoản ngân hàng (VietQR)</span></label>
+                </div>
+                <div x-show="paymentMethod === 'bank'" class="mt-6 bg-gray-900/70 p-4 rounded-lg text-center" x-transition><p class="text-white mb-4">Quét mã QR để thanh toán <strong x-text="formatCurrency(totalPrice)"></strong></p><div class="flex justify-center"><img :src="vietQRUrl" alt="VietQR Code" class="rounded-md bg-white p-2"></div><p class="text-sm text-gray-400 mt-2">Nội dung chuyển khoản sẽ được tự động điền.</p></div>
+            </div>
+            <div class="bg-gray-800 p-6 md:p-8 rounded-lg h-fit sticky top-24 border border-gray-700/50">
+                <h2 class="text-xl font-semibold text-white mb-6">Tóm tắt đơn hàng</h2>
+                <div class="space-y-4 max-h-60 overflow-y-auto pr-2">
+                    <template x-for="(item, index) in cart" :key="index"><div class="flex justify-between items-start text-sm"><div class="flex-1 pr-2"><p class="text-gray-300" x-text="`${item.name} x${item.quantity}`"></p><div x-show="item.selectedOptions && Object.keys(item.selectedOptions).length > 0" class="text-xs text-gray-400" x-text="Object.entries(item.selectedOptions).map(([key, value]) => `${key}: ${value}`).join(', ')"></div><p x-show="item.printing_notes" class="text-orange-400 text-xs" x-text="`In: ${item.printing_notes}`"></p></div><span class="text-white font-medium" x-text="formatCurrency(item.price * item.quantity)"></span></div></template>
+                </div>
+                <div class="border-t border-gray-700 mt-4 pt-4"><div class="space-y-2"><div class="flex justify-between text-sm"><span class="text-gray-400">Tạm tính</span><span class="text-white" x-text="formatCurrency(subtotal)"></span></div><div x-show="appliedVoucher" x-transition class="flex justify-between text-sm"><span class="text-gray-400">Giảm giá (<span class="font-mono" x-text="appliedVoucher.id"></span>)</span><span class="text-white" x-text="'-' + formatCurrency(discountAmount)"></span></div></div><div class="border-t border-gray-700 my-4"></div><div class="flex justify-between text-lg font-bold"><span class="text-white">Tổng cộng</span><span class="text-orange-500" x-text="formatCurrency(totalPrice)"></span></div></div>
+                <div class="mt-4 pt-4 border-t border-gray-700"><label class="block text-sm font-medium text-gray-300 mb-2">Mã giảm giá</label><div class="flex items-center gap-2"><input type="text" x-model="voucherCode" @keydown.enter.prevent="applyVoucher" placeholder="Nhập mã voucher" :disabled="appliedVoucher" class="flex-grow input-field text-sm uppercase placeholder:normal-case disabled:opacity-50"><button @click="appliedVoucher ? removeVoucher() : applyVoucher()" :class="appliedVoucher ? 'bg-red-600 hover:bg-red-500' : 'bg-gray-600 hover:bg-gray-500'" class="text-white font-bold py-2 px-3 rounded text-sm transition-colors"><span x-text="appliedVoucher ? 'Hủy' : 'OK'"></span></button></div><p x-show="voucherMessage" x-text="voucherMessage" class="text-xs mt-2" :class="appliedVoucher ? 'text-green-400' : 'text-red-400'"></p></div>
+                <button form="checkout-form" type="submit" :disabled="isLoading || cart.length === 0" class="w-full mt-6 bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition disabled:bg-gray-500 disabled:cursor-not-allowed"><span x-text="isLoading ? 'Đang xử lý...' : 'Xác Nhận Đặt Hàng'"></span></button>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="./js/firebase-config.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/checkout.js"></script>
+</body>
+</html>
